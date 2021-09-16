@@ -9,7 +9,7 @@ import { withId } from '../utils';
 import Web3Provider, { Web3ProviderLike } from './web3';
 
 const { createFixtureLoader, provider } = waffle;
-const { isProvider, call } = Web3Provider;
+const { isProvider, send } = Web3Provider;
 
 const loadFixture = createFixtureLoader(provider.getWallets(), provider);
 
@@ -36,12 +36,14 @@ describe('isProvider', () => {
   });
 });
 
-describe('call', () => {
+describe('send', () => {
   it('gets the Ether balances from the contract', async () => {
     const { contract, addresses } = await loadFixture(fixture);
 
     const data = withId(ETHER_BALANCES_ID, encode(ETHER_BALANCES_TYPE, [addresses]));
-    const response = await call((web3 as unknown) as Web3ProviderLike, contract.address, data);
+    const response = await send<string>((web3 as unknown) as Web3ProviderLike, 'eth_call', [
+      { to: contract.address, data }
+    ]);
 
     const results = decode(['(bool,bytes)[]'], fromHex(response))[0] as Result[];
 
@@ -59,7 +61,9 @@ describe('call', () => {
     await token.mock.balanceOf.returns('1000');
 
     const data = withId(TOKEN_BALANCES_ID, encode(TOKEN_BALANCES_TYPE, [addresses, token.address]));
-    const response = await call((web3 as unknown) as Web3ProviderLike, contract.address, data);
+    const response = await send<string>((web3 as unknown) as Web3ProviderLike, 'eth_call', [
+      { to: contract.address, data }
+    ]);
 
     const results = decode(['(bool,bytes)[]'], fromHex(response))[0] as Result[];
 

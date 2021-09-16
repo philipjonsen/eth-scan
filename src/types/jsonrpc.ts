@@ -5,8 +5,6 @@ export interface JsonRpcPayload<T = unknown[]> {
   id?: string | number;
 }
 
-export type EthCallJsonRpcPayload = JsonRpcPayload<[{ to: string; data: string }, string]>;
-
 export interface JsonRpcResult<T> {
   id: number;
   jsonrpc: string;

@@ -1,5 +1,7 @@
 import fetch from 'isomorphic-unfetch';
-import type { EthCallJsonRpcPayload, JsonRpcResult, Provider } from '../types';
+import uuid from 'uuid-random-es';
+import type { JsonRpcResult, Provider } from '../types';
+import { JsonRpcPayload } from '../types';
 
 interface HttpProviderOptions {
   url: string;
@@ -19,10 +21,10 @@ const provider: Provider<HttpProviderLike> = {
     );
   },
 
-  call: async (provider: HttpProviderLike, contractAddress: string, data: string): Promise<string> => {
+  send: async <Result>(provider: HttpProviderLike, method: string, params: unknown[]): Promise<Result> => {
     const url = typeof provider === 'string' ? provider : provider.url;
     const options = typeof provider === 'object' ? provider.params : {};
-    const payload = getPayload(contractAddress, data);
+    const payload = getPayload(method, params);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -36,12 +38,12 @@ const provider: Provider<HttpProviderLike> = {
     });
 
     if (!response.ok) {
-      throw new Error(`Contract call failed with HTTP error ${response.status}: ${response.statusText}`);
+      throw new Error(`Request failed with HTTP error ${response.status}: ${response.statusText}`);
     }
 
-    const { error, result }: JsonRpcResult<string> = await response.json();
+    const { error, result }: JsonRpcResult<Result> = await response.json();
     if (error) {
-      throw new Error(`Contract call failed: ${error.message}`);
+      throw new Error(`Request failed: ${error.message}`);
     }
 
     return result;
@@ -53,15 +55,9 @@ export default provider;
 /**
  * Get the JSON-RPC payload for the `eth_call` function.
  */
-export const getPayload = (to: string, data: string): EthCallJsonRpcPayload => ({
+export const getPayload = (method: string, params: unknown[]): JsonRpcPayload => ({
   jsonrpc: '2.0',
-  method: 'eth_call',
-  params: [
-    {
-      to,
-      data
-    },
-    'latest'
-  ],
-  id: 1
+  method,
+  params,
+  id: uuid()
 });

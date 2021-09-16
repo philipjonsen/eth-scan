@@ -1,14 +1,7 @@
 import type { Provider } from '../types';
 
-type BlockTag = string | number;
-
-interface TransactionRequest {
-  to: string;
-  data: string;
-}
-
 export interface EthersProviderLike {
-  call(transaction: TransactionRequest, blockTag?: BlockTag | Promise<BlockTag>): Promise<string>;
+  send<Result>(method: string, params: unknown[] | unknown): Promise<Result>;
 }
 
 /**
@@ -16,16 +9,11 @@ export interface EthersProviderLike {
  */
 const provider: Provider<EthersProviderLike> = {
   isProvider: (provider: unknown): provider is EthersProviderLike => {
-    return (provider as EthersProviderLike)?.call !== undefined;
+    return (provider as EthersProviderLike)?.send !== undefined;
   },
 
-  call: async (provider: EthersProviderLike, contractAddress: string, data: string): Promise<string> => {
-    const transaction: TransactionRequest = {
-      to: contractAddress,
-      data
-    };
-
-    return provider.call(transaction, 'latest');
+  send<Result>(provider: EthersProviderLike, method: string, params: unknown[]): Promise<Result> {
+    return provider.send(method, params);
   }
 };
 

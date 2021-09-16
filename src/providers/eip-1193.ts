@@ -2,7 +2,7 @@ import type { JsonRpcPayload, Provider } from '../types';
 import { getPayload } from './http';
 
 export interface EIP1193ProviderLike {
-  request(transaction: JsonRpcPayload): Promise<string>;
+  request<Result>(transaction: JsonRpcPayload): Promise<Result>;
 }
 
 /**
@@ -13,8 +13,8 @@ const provider: Provider<EIP1193ProviderLike> = {
     return (provider as EIP1193ProviderLike)?.request !== undefined;
   },
 
-  call: async (provider: EIP1193ProviderLike, contractAddress: string, data: string): Promise<string> => {
-    const payload = getPayload(contractAddress, data);
+  send: async <Result>(provider: EIP1193ProviderLike, method: string, params: unknown[]): Promise<Result> => {
+    const payload = getPayload(method, params);
     return provider.request(payload);
   }
 };

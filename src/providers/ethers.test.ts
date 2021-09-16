@@ -7,7 +7,7 @@ import { withId } from '../utils';
 import EthersProvider from './ethers';
 
 const { createFixtureLoader, provider } = waffle;
-const { isProvider, call } = EthersProvider;
+const { isProvider, send } = EthersProvider;
 
 const loadFixture = createFixtureLoader(provider.getWallets(), provider);
 
@@ -18,12 +18,12 @@ describe('isProvider', () => {
   });
 });
 
-describe('call', () => {
+describe('send', () => {
   it('gets the Ether balances from the contract', async () => {
     const { contract, addresses } = await loadFixture(fixture);
 
     const data = withId(ETHER_BALANCES_ID, encode(ETHER_BALANCES_TYPE, [addresses]));
-    const response = await call(ethers.provider, contract.address, data);
+    const response = await send<string>(ethers.provider, 'eth_call', [{ to: contract.address, data }]);
 
     const results = decode(['(bool,bytes)[]'], fromHex(response))[0] as Result[];
 
@@ -41,7 +41,7 @@ describe('call', () => {
     await token.mock.balanceOf.returns('1000');
 
     const data = withId(TOKEN_BALANCES_ID, encode(TOKEN_BALANCES_TYPE, [addresses, token.address]));
-    const response = await call(ethers.provider, contract.address, data);
+    const response = await send<string>(ethers.provider, 'eth_call', [{ to: contract.address, data }]);
 
     const results = decode(['(bool,bytes)[]'], fromHex(response))[0] as Result[];
 

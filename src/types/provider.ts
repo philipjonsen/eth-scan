@@ -1,6 +1,6 @@
 export interface Provider<T> {
   isProvider(provider: unknown): provider is T;
-  call(provider: T, contractAddress: string, data: string): Promise<string>;
+  send<Result>(provider: T, method: string, params: unknown[]): Promise<Result>;
 }
 
 export type InferProviderType<P extends readonly unknown[]> = {

@@ -15,28 +15,23 @@ const provider: Provider<Web3ProviderLike> = {
     return (provider as Web3ProviderLike)?.currentProvider?.send !== undefined;
   },
 
-  call: async (provider: Web3ProviderLike, contractAddress: string, data: string): Promise<string> => {
-    const payload = getPayload(contractAddress, data);
-    const { result } = await send<string>(provider, payload);
+  send: <T>(provider: Web3ProviderLike, method: string, params: unknown[]): Promise<T> => {
+    const payload = getPayload(method, params);
 
-    return result;
+    return new Promise((resolve, reject) => {
+      provider.currentProvider.send<T>(payload, (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+
+        if (!result) {
+          return reject(new Error('No response payload'));
+        }
+
+        resolve(result.result);
+      });
+    });
   }
 };
 
 export default provider;
-
-export const send = <T>(provider: Web3ProviderLike, payload: JsonRpcPayload): Promise<JsonRpcResult<T>> => {
-  return new Promise((resolve, reject) => {
-    provider.currentProvider.send<T>(payload, (error, result) => {
-      if (error) {
-        return reject(error);
-      }
-
-      if (!result) {
-        return reject(new Error('No response payload'));
-      }
-
-      resolve(result);
-    });
-  });
-};

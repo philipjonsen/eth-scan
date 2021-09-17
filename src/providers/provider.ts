@@ -29,7 +29,7 @@ export const getProvider = (providerLike: ProviderLike): Provider<unknown> => {
  */
 export const call = async (providerLike: ProviderLike, contractAddress: string, data: string): Promise<Uint8Array> => {
   try {
-    const result = await send<string>(providerLike, 'eth_call', [{ to: contractAddress, data }]);
+    const result = await send<string>(providerLike, 'eth_call', [{ to: contractAddress, data }, 'latest']);
     if (stripPrefix(result).startsWith('08c379a')) {
       throw new Error('Call reverted');
     }

@@ -1,5 +1,5 @@
 import fetch from 'isomorphic-unfetch';
-import uuid from 'uuid-random-es';
+import { nanoid } from 'nanoid';
 import type { JsonRpcResult, Provider } from '../types';
 import { JsonRpcPayload } from '../types';
 
@@ -59,5 +59,5 @@ export const getPayload = (method: string, params: unknown[]): JsonRpcPayload =>
   jsonrpc: '2.0',
   method,
   params,
-  id: uuid()
+  id: nanoid()
 });
